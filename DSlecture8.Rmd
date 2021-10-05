@@ -9,3 +9,203 @@ output: github_document
 knitr::opts_chunk$set(echo = TRUE)
 ```
 
+```{r}
+library(tidyverse)
+library(ggridges)
+```
+
+
+
+```{r}
+weather_df = 
+  rnoaa::meteo_pull_monitors(
+    c("USW00094728", "USC00519397", "USS0023B17S"),
+    var = c("PRCP", "TMIN", "TMAX"), 
+    date_min = "2017-01-01",
+    date_max = "2017-12-31") %>%
+  mutate(
+    name = recode(
+      id, 
+      USW00094728 = "CentralPark_NY", 
+      USC00519397 = "Waikiki_HA",
+      USS0023B17S = "Waterhole_WA"),
+    tmin = tmin / 10,
+    tmax = tmax / 10) %>%
+  select(name, id, everything())
+weather_df
+```
+## scatter plot
+
+first scatter plot
+```{r}
+ggplot(weather_df, aes(x = tmin, y = tmax)) + geom_point()
+```
+
+
+New approach
+```{r}
+weather_df %>% 
+  ggplot(aes(x = tmin, y = tmax)) + geom_point()
+```
+
+Save and edit a plot object
+```{r}
+weather_plot =
+  weather_df %>% 
+  ggplot(aes(x = tmin, y = tmax))
+
+weather_plot + geom_point()
+```
+
+
+## advance scatter plot
+
+start with the same one and make it fancy
+
+```{r}
+weather_df %>% 
+  ggplot(aes(x = tmin, y = tmax, color = name)) + geom_point() + geom_smooth(se = FALSE)
+```
+
+what is about the aes placement
+```{r}
+weather_df %>% 
+  ggplot(aes(x = tmin, y = tmax)) + geom_point(aes(color = name)) + geom_smooth(se = FALSE)
+```
+
+let facet sth
+
+```{r}
+weather_df %>% 
+  ggplot(aes(x = tmin, y = tmax, color = name)) + 
+  geom_point() + 
+  geom_smooth(se = FALSE) +
+  facet_grid(. ~ name)
+```
+
+```{r}
+weather_df %>% 
+  ggplot(aes(x = tmin, y = tmax, color = name)) + 
+  geom_point() + 
+  geom_smooth(se = FALSE) +
+  facet_grid( name ~.)
+```
+
+define transparency
+```{r}
+weather_df %>% 
+  ggplot(aes(x = tmin, y = tmax, color = name)) + 
+  geom_point(alpha = .2, size = .3) + 
+  geom_smooth(se = FALSE, size = 2) +
+  facet_grid( . ~ name)
+```
+
+the alpha could be variable
+```{r}
+weather_df %>% 
+  ggplot(aes(x = tmin, y = tmax, alpha = tmin, color = name)) + 
+  geom_point( size = .3) + 
+  geom_smooth(se = FALSE, size = 2) +
+  facet_grid( . ~ name)
+```
+
+combine some elements
+
+```{r}
+weather_df  %>% 
+  ggplot(aes(x = date, y = tmax, color = name)) + 
+  geom_point(aes(size = prcp, alpha = 0.5)) +
+  geom_smooth(se = FALSE)  + 
+  facet_grid(.~ name)
+```
+
+## Some small notes
+
+how many geoms have to exist
+
+```{r}
+weather_df %>% 
+  ggplot( aes (x = tmin, y = tmax, color = name)) +
+  geom_smooth(se = FALSE)
+```
+
+you can use a neat geom
+for population is big, scatter point is hard to see
+```{r}
+weather_df %>% 
+  ggplot(aes(x = tmin, y = tmax)) +
+  geom_hex()
+```
+
+```{r}
+weather_df %>% 
+  ggplot(aes(x = tmin, y = tmax)) +
+  geom_bin2d()
+```
+```{r}
+weather_df %>% 
+  ggplot(aes(x = tmin, y = tmax)) +
+  geom_density_2d() + geom_point( alpha = 0.3)
+```
+
+
+## univariate plot
+one variable a time
+
+histograms are really great
+
+```{r}
+weather_df %>% 
+  ggplot(aes(x = tmin)) +
+  geom_histogram()
+```
+
+can we add color
+
+```{r}
+weather_df %>% 
+  ggplot(aes(x = tmin, fill = name)) +
+  geom_histogram(position = "dodge")
+```
+```{r}
+weather_df %>% 
+  ggplot(aes(x = tmin, fill = name)) +
+  geom_histogram() +
+  facet_grid(.~name)
+```
+
+
+let try a new geometry
+```{r}
+weather_df %>% 
+  ggplot(aes(x = tmin, fill = name)) +
+  geom_density( alpha = 0.3)
+
+```
+
+what about boxplot
+```{r}
+weather_df %>% 
+  ggplot(aes(x = name, y = tmin)) +
+  geom_boxplot()
+```
+
+
+Trendy plot
+```{r}
+weather_df %>% 
+  ggplot(aes(x = name, y = tmin, fill = name)) +
+  geom_violin(alpha = 0.3) + 
+  stat_summary()
+```
+ridge plots
+
+```{r}
+weather_df %>% 
+  ggplot(aes(x = tmin, y = name))+
+  geom_density_ridges()
+```
+
+
+
+
