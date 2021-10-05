@@ -1,0 +1,11 @@
+---
+title: "DSlecture8"
+author: "Hening cui"
+date: "2021/10/5"
+output: github_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
